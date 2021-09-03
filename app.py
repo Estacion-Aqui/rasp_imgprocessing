@@ -1,5 +1,6 @@
-from img_processor import ImageProcessor
+from folder_watcher import FolderWatcher
 
-processor = ImageProcessor()
+folderWatcher = FolderWatcher()
 
-processor.exec("resources/carro4.jpg")
+while (True):
+  folderWatcher.exec()

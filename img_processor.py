@@ -1,10 +1,10 @@
 from helix_publisher import HelixPublisher
-from openCvProccess import OpenCvProcess
+from open_cv_proccess import OpenCvProcess
 
 class ImageProcessor:
 
     def exec(self, imageSource):
-        id = 'urn:ngsi-ld:ParkingSpot:sbc:golden:001'
+        id = 'urn:ngsi-ld:ParkingSpot:' + self.getSpotId(imageSource)
         openCvProcessor = OpenCvProcess()
         attribute = {}
         plateChars = str(openCvProcessor.exec(imageSource)).rstrip().lstrip()
@@ -20,7 +20,17 @@ class ImageProcessor:
                 "status" : { "value" : "free", "type" : "string" }
             }
 
+        print(attribute)
+        print(id)
         self.publish_to_helix(id, attribute)
+
+
+    def getSpotId(self, imageSource):
+        filename = imageSource.split("/")[-1]
+        id = filename.split("_")[0]
+
+        return str(id).replace("-", ":")
+
 
     def publish_to_helix(self, id, attribute):
         publisher = HelixPublisher()

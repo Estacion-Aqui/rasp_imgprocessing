@@ -1,6 +1,6 @@
-import cv2
-import os
-import pytesseract
+import cv2, os, pytesseract
+from pathlib import Path
+
 
 
 class OpenCvProcess:
@@ -56,15 +56,23 @@ class OpenCvProcess:
   def ocrPlateImage(self):
     image = cv2.imread("out/roi-ocr.png")
     config = r'-c tessedit_char_whitelist=ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 --psm 6'
+    output = ""
 
-    output = pytesseract.image_to_string(image, lang='eng', config=config)
-
-    return output
+    try:
+      output = pytesseract.image_to_string(image, lang='eng', config=config)
+    except:
+      print("falha ao ler imagem com o tesseract")
+    else:
+      return output
 
   def cleanFiles(self):
-    os.remove("out/roi.png")
-    os.remove("out/roi-ocr.png")
-    # os.remove(self.imageSource)
+    if Path("out/roi.png").is_file():
+      os.remove("out/roi.png")
+    if Path("out/roi-ocr.png").is_file():
+      os.remove("out/roi-ocr.png")
+    if Path(self.imageSource).is_file():
+      print(self.imageSource + " exists")
+      # os.remove(self.imageSource)
 
 
   def exec(self, imgSource):
@@ -74,6 +82,6 @@ class OpenCvProcess:
     self.preProcessPlateImage()
     plateChars = self.ocrPlateImage()
 
-    self.cleanFiles()
+    # self.cleanFiles()
 
     return plateChars
