@@ -12,13 +12,16 @@ class OpenCvProcess:
     print(self.imageSource)
 
     grey = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    # cv2.imshow("grey", img)
+    cv2.imshow("grey", img)
+    cv2.waitKey(0)
 
     _, bin = cv2.threshold(grey, 90, 255, cv2.THRESH_BINARY)
-    # cv2.imshow("binary", img)
+    cv2.imshow("binary", img)
+    cv2.waitKey(0)
 
     blurred = cv2.GaussianBlur(bin, (5, 5), 0)
-    # cv2.imshow("blurred", blurred)
+    cv2.imshow("blurred", blurred)
+    cv2.waitKey(0)
 
     contours, hierarchy = cv2.findContours(blurred, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
 
@@ -33,7 +36,7 @@ class OpenCvProcess:
           cv2.imwrite('out/roi.png', roi)
 
     cv2.imshow("contours", img)
-    cv2.waitKey(2000)
+    cv2.waitKey(0)
     cv2.destroyAllWindows()
 
 
@@ -72,7 +75,7 @@ class OpenCvProcess:
       os.remove("out/roi-ocr.png")
     if Path(self.imageSource).is_file():
       print(self.imageSource + " exists")
-      # os.remove(self.imageSource)
+      os.remove(self.imageSource)
 
 
   def exec(self, imgSource):
@@ -82,6 +85,6 @@ class OpenCvProcess:
     self.preProcessPlateImage()
     plateChars = self.ocrPlateImage()
 
-    # self.cleanFiles()
+  #  self.cleanFiles()
 
     return plateChars
