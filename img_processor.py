@@ -9,7 +9,9 @@ class ImageProcessor:
         attribute = {}
         plateChars = str(openCvProcessor.exec(imageSource)).rstrip().lstrip()
 
-        if (len(plateChars) == 7):
+        print(plateChars)
+
+        if (len(plateChars) > 6 and len(plateChars) < 9):
             attribute = {
                 "current_plate" : { "value" : str(plateChars), "type" : "string" },
                 "status" : { "value" : "filled", "type" : "string" }
