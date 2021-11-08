@@ -4,10 +4,11 @@ from open_cv_proccess import OpenCvProcess
 class ImageProcessor:
 
     def exec(self, imageSource):
-        id = 'urn:ngsi-ld:ParkingSpot:' + self.getSpotId(imageSource)
+        cam_id, spotNum = self.getSpotId(imageSource)
+        id = 'urn:ngsi-ld:ParkingSpot:' + cam_id
         openCvProcessor = OpenCvProcess()
         attribute = {}
-        plateChars = str(openCvProcessor.exec(imageSource)).rstrip().lstrip()
+        plateChars = str(openCvProcessor.exec(imageSource, spotNum)).rstrip().lstrip()
 
         print(plateChars)
 
@@ -30,8 +31,9 @@ class ImageProcessor:
     def getSpotId(self, imageSource):
         filename = imageSource.split("/")[-1]
         id = filename.split("_")[0]
+        spot_number = filename.split("_")[1]
 
-        return str(id).replace("-", ":")
+        return str(id).replace("-", ":"), str(spot_number)
 
 
     def publish_to_helix(self, id, attribute):
