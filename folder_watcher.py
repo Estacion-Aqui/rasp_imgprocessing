@@ -1,5 +1,5 @@
 from img_processor import ImageProcessor
-import os
+import os, time
 
 class FolderWatcher:
 
@@ -19,6 +19,7 @@ class FolderWatcher:
         for fileStr in addedFiles:
           fileExt = fileStr.split('.')[-1]
           if(fileExt == "jpg" or fileExt == "png" or fileExt == "jpeg"):
+            time.sleep(1)
             self.processor.exec(self.path_to_watch + fileStr)
         break
       else:
