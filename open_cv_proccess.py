@@ -56,11 +56,11 @@ class OpenCvProcess:
 
 
   def ocrPlateImage(self, image):
-    config = r'-c tessedit_char_whitelist=ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 --psm 6'
+    config = r'-c tessedit_char_whitelist=ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 --psm 6 --oem 3'
     output = ""
 
     try:
-      output = pytesseract.image_to_string(image, lang='eng', config=config)
+      output = pytesseract.image_to_string(image, lang='estacionaqui', config=config)
     except:
       print("falha ao ler imagem com o tesseract")
       return "", False
@@ -91,6 +91,10 @@ class OpenCvProcess:
         if (foundPlate):
           foundPlateChars.append(plateChars)
 
+    # cv2.imshow("contours", img)
+    # cv2.waitKey(0)
+    # cv2.destroyAllWindows()
+
     return foundPlateChars
 
 
@@ -111,6 +115,6 @@ class OpenCvProcess:
     except Exception as e:
       print("falha no processo de leitura: " + str(e))
 
-    self.cleanFiles()
+    # self.cleanFiles()
 
     return foundPlate[0] if len(foundPlate) > 0 else ""
