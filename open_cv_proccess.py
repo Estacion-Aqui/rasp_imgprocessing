@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 
 class OpenCvProcess:
 
-  pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files (x86)\Tesseract-OCR\tesseract.exe"
+  #pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files (x86)\Tesseract-OCR\tesseract.exe"
 
   imageSource = ""
 
@@ -16,10 +16,6 @@ class OpenCvProcess:
   def findPossiblePlatesContours(self):
     img = cv2.imread(self.imageSource)
     element = cv2.getStructuringElement(cv2.MORPH_RECT, (22, 3))
-
-    # cv2.imshow("original", img)
-    # cv2.waitKey(0)
-    # cv2.destroyAllWindows()
 
     blurred = cv2.GaussianBlur(img, (5, 5), 0)
     grey = cv2.cvtColor(blurred, cv2.COLOR_BGR2GRAY)
@@ -74,10 +70,6 @@ class OpenCvProcess:
     config = r'-c tessedit_char_whitelist=ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 --psm 7 --oem 2'
     output = ""
 
-    # cv2.imshow("ocr", image)
-    # cv2.waitKey(0)
-    # cv2.destroyAllWindows()
-
     try:
       output = pytesseract.image_to_string(image, lang='eng', config=config)
     except Exception as e:
@@ -102,7 +94,6 @@ class OpenCvProcess:
         (x, y, lar, alt) = cv2.boundingRect(c)
         cv2.rectangle(img, (x, y), (x + lar, y + alt), (255, 0, 0), 2)
         roi = img[y:y + alt, x:x + lar]
-        # roi = img[y - 5:y + alt + 5, x - 5:x + lar + 5]
 
         try:
           processedImage = self.preProcessPlateImage(roi)
@@ -114,10 +105,6 @@ class OpenCvProcess:
 
         if (foundPlate):
           foundPlateChars.append(plateChars)
-
-    # cv2.imshow("contours", img)
-    # cv2.waitKey(0)
-    # cv2.destroyAllWindows()
 
     return foundPlateChars
 
