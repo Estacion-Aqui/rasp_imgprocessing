@@ -3,10 +3,11 @@ from pathlib import Path
 import imutils
 import numpy as np
 import re
+import matplotlib.pyplot as plt
 
 class OpenCvProcess:
 
-  #pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
+  pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files (x86)\Tesseract-OCR\tesseract.exe"
 
   imageSource = ""
 
@@ -16,9 +17,13 @@ class OpenCvProcess:
     img = cv2.imread(self.imageSource)
     element = cv2.getStructuringElement(cv2.MORPH_RECT, (22, 3))
 
+    # cv2.imshow("original", img)
+    # cv2.waitKey(0)
+    # cv2.destroyAllWindows()
+
     blurred = cv2.GaussianBlur(img, (5, 5), 0)
     grey = cv2.cvtColor(blurred, cv2.COLOR_BGR2GRAY)
-    
+
     sobelx = cv2.Sobel(grey, cv2.CV_8U, 1, 0, 3)
     _, threshold_img = cv2.threshold(sobelx, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
 
@@ -38,31 +43,45 @@ class OpenCvProcess:
     if img_roi is None:
       return
 
-    resize_img_roi = cv2.resize(img_roi, None, fx=4, fy=4, interpolation=cv2.INTER_CUBIC)
-    img_grey = cv2.cvtColor(resize_img_roi, cv2.COLOR_BGR2GRAY)
-    _, img_binary = cv2.threshold(img_grey, 70, 255, cv2.THRESH_BINARY)
-    blurred_img = cv2.GaussianBlur(img_binary, (5, 5), 0)
+    kernel = np.ones((1, 1), np.uint8)
 
-    return blurred_img
+    resize_img_roi = cv2.resize(img_roi, None, fx=1.2, fy=1.2, interpolation=cv2.INTER_CUBIC)
+    img_grey = cv2.cvtColor(resize_img_roi, cv2.COLOR_BGR2GRAY)
+
+    img_dilated = cv2.dilate(img_grey, kernel, iterations=1)
+    img_erode = cv2.erode(img_dilated, kernel, iterations=1)
+
+    blurred_img = cv2.GaussianBlur(img_erode, (5, 5), 0)
+    _, img_binary = cv2.threshold(blurred_img, 70, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+
+    cv2.imshow("processed", img_binary)
+    cv2.waitKey(1500)
+    cv2.destroyAllWindows()
+
+    return img_binary
 
 
   def checkPlateChars(self, plate):
     platechars = "".join(re.findall("[a-zA-Z0-9]", plate))
 
-    if len(platechars) == 7:
-      return platechars, True
+    if len(platechars) >= 7:
+      return platechars[0:7], True
     else:
       return "", False
 
 
   def ocrPlateImage(self, image):
-    config = r'-c tessedit_char_whitelist=ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 --psm 6 --oem 3'
+    config = r'-c tessedit_char_whitelist=ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 --psm 7 --oem 2'
     output = ""
 
+    # cv2.imshow("ocr", image)
+    # cv2.waitKey(0)
+    # cv2.destroyAllWindows()
+
     try:
-      output = pytesseract.image_to_string(image, lang='estacionaqui', config=config)
-    except:
-      print("falha ao ler imagem com o tesseract")
+      output = pytesseract.image_to_string(image, lang='eng', config=config)
+    except Exception as e:
+      print("falha ao ler imagem com o tesseract: " + str(e))
       return "", False
     else:
       checkedPlate, isPlate = self.checkPlateChars(output)
@@ -77,14 +96,19 @@ class OpenCvProcess:
     for c in contours:
       perimeter = cv2.arcLength(c, True)
       approx = cv2.approxPolyDP(c, 0.025 * perimeter, True)
-      (x, y, alt, lar) = cv2.boundingRect(c)
+      (x, y, lar, alt) = cv2.boundingRect(c)
 
       if len(approx) >= 4 and len(approx) <= 6:
-        (x, y, alt, lar) = cv2.boundingRect(c)
-        cv2.rectangle(img, (x, y), (x + alt, y + lar), (255, 0, 0), 2)
-        roi = img[y:y + lar, x:x + alt]
+        (x, y, lar, alt) = cv2.boundingRect(c)
+        cv2.rectangle(img, (x, y), (x + lar, y + alt), (255, 0, 0), 2)
+        roi = img[y:y + alt, x:x + lar]
+        # roi = img[y - 5:y + alt + 5, x - 5:x + lar + 5]
 
-        processedImage = self.preProcessPlateImage(roi)
+        try:
+          processedImage = self.preProcessPlateImage(roi)
+        except Exception as e:
+          print("falha ao processar imagem: " + str(e))
+          continue
 
         plateChars, foundPlate = self.ocrPlateImage(processedImage)
 
@@ -115,6 +139,6 @@ class OpenCvProcess:
     except Exception as e:
       print("falha no processo de leitura: " + str(e))
 
-    # self.cleanFiles()
+    self.cleanFiles()
 
     return foundPlate[0] if len(foundPlate) > 0 else ""
